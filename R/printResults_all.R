@@ -10,6 +10,12 @@ printResults_all <- function(res,
     if(any(names(res)=="gamma")) GAMMA <- res$gamma
     createDir <- paste0("mkdir ",outdir,"/profiles_",projectname)
     system(createDir)
+
+    solutionsDir =  file.path(outdir, "solutions")
+    if (!dir.exists(solutionsDir)) {
+      dir.create(solutionsDir, recursive = TRUE)
+    }
+
     for(i in 1:length(res$allTracks.processed))
     {
         png(paste0(outdir,"/profiles_",projectname,"/",names(res$allTracks)[i],".png"), width = 5500, height = 2496, res=300)
@@ -30,15 +36,22 @@ printResults_all <- function(res,
         try({
             writeProfile(prof=res$allProfiles[[i]],
                          samplename=paste0(names(res$allTracks)[i],"_",projectname),
-                         outdir=outdir)
+                         outdir=solutionsDir)
         })
     }
     ##    zip(zipfile = paste0(outdir,"/profiles_",projectname,".zip"), files = paste0(outdir,"/profiles_",projectname))
     ##    unlink(x=paste0(outdir,"/profiles_",projectname), recursive = TRUE)
     createDirRefit <- paste0("mkdir ",outdir,"/profiles_",projectname,"_refitted")
     system(createDirRefit)
+
+    solutionsRefitDir =  file.path(outdir, "solutions_refit")
+    if (!dir.exists(solutionsRefitDir)) {
+        dir.create(solutionsRefitDir, recursive = TRUE)
+    }
+
     if(any(grepl("refitted",names(res))))
-    {
+    { 
+
         for(i in 1:length(res$allTracks.processed))
         {
             png(paste0(outdir,"/profiles_",projectname,"_refitted/",names(res$allTracks)[i],".png"), width = 5500, height = 2496, res=300)
@@ -59,7 +72,7 @@ printResults_all <- function(res,
             try({
                 writeProfile(prof=res$allProfiles.refitted.auto[[i]],
                              samplename=paste0(names(res$allTracks)[i],"_",projectname,"_refitted"),
-                             outdir=outdir)
+                             outdir=solutionsRefitDir)
             })
         }
         ##zip(zipfile = paste0(outdir,"/profiles_",projectname,"_refitted.zip"), files = paste0(outdir,"/profiles_",projectname,"_refitted"))
@@ -94,14 +107,13 @@ printResults_all <- function(res,
                                                                          ploidy.tumour=sapply(res$allProfiles.refitted.auto,function(x) .mytry(getploidy(x)))))))})
     outdir <- gsub("/$","",outdir)
     try(write.table(res$summary$allSols,
-                    file=paste0(outdir,
-                                "/summary_",
+                    file=paste0(solutionsDir, "/summary_",
                                 projectname,".txt"),
                     sep="\t",quote=F,
                     col.names=T,row.names=T))
     try(write.table(res$summary$allSols.refitted,
-                    file=paste0(outdir,"/summary_",projectname,"_refitted.txt"),
+                    file=paste0(solutionsRefitDir,  "/summary_",projectname,"_refitted.txt"),
                     sep="\t",quote=F,col.names=T,row.names=T))
-    save(res, file=paste0(outdir,"/result_object_",projectname,".Rda"))
+    saveRDS(res, file=paste0(outdir,"/result_object_",projectname,".RDS"))
     res
 }
