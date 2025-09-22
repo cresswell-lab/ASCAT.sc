@@ -206,7 +206,7 @@ run_sc_sequencing_smoothing <- function(tumour_bams,
     if(multipcf)
     {
 
-        res$allTracks.smoothed <- mclapply(lapply(names(res$allTracks), function(cell.name) res$allTracks[[cell.name]][[2]]), function(cell.nlCTS)
+        res$allTracks.smoothed <- mclapply(lapply(names(res$allTracks), function(cell.name) res$allTracks[[cell.name]]$nlCTS.tumour), function(cell.nlCTS)
             {
                 lCTS.smoothed = smooth_tracks_k_bins(cell.nlCTS,
                                                 smoothing.window = smoothingwindow)
@@ -235,7 +235,7 @@ run_sc_sequencing_smoothing <- function(tumour_bams,
             res$allTracks.smoothed <- mclapply(lapply(names(res$allTracks), function(cell.name) res$allTracks[[cell.name]][[2]]), function(cell.nlCTS)
             {
                 lCTS.smoothed = smooth_tracks_k_bins(cell.nlCTS,
-                                                smoothing.window = 5)
+                                                smoothing.window = smoothingwindow)
             }, mc.cores=MC.CORES)
 
             print("## smooth Tracks")
@@ -283,6 +283,7 @@ run_sc_sequencing_smoothing <- function(tumour_bams,
     names(res$allProfiles) <- names(res$allSols) <- names(res$allTracks)
     print("## compile Results")
     res <- list(allTracks.processed=res$allTracks.processed,
+                allTracks.smoothed=res$allTracks.smoothed,
                 allTracks=res$allTracks,
                 allSolutions=res$allSols,
                 allProfiles=res$allProfiles,
