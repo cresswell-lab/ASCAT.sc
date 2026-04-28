@@ -1,5 +1,5 @@
 isGoodSolution <-
-function(meansSeg,maxSize0=20)
+function(meansSeg,maxSize0=Inf)
 {
     starts <- unlist(lapply(meansSeg,function(x) lapply(x,function(y) y$start)))
     ends <- unlist(lapply(meansSeg,function(x) lapply(x,function(y) y$end)))
