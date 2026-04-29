@@ -7,7 +7,7 @@ smoothCoverageTrackNoCN0 <- function(lCT,
 {
     
     allRec.counts = unlist(lapply(lCT,function(x) x$records))
-    allRec.counts.clusters = Mclust(allRec.counts, G = 1:10 )
+    allRec.counts.clusters = mclust::Mclust(allRec.counts, G = 1:10 )
     cn0.cluster = which(allRec.counts.clusters$parameters$mean < 10)
 
     if (length(cn0.cluster) > 0) {
