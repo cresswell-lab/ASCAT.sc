@@ -16,6 +16,7 @@ run_targeted_sequencing <- function(tumour_bams,
                                     print_results=TRUE,
                                     MC.CORES=1,
                                     outdir="./",
+                                    is_pdf=F,
                                     projectname="project",
                                     multipcf=FALSE)
 {
@@ -56,7 +57,7 @@ run_targeted_sequencing <- function(tumour_bams,
         names(lGCT)[1:length(allchr)] <- names(lSe)[1:length(allchr)] <- allchr
         lSe <- lapply(allchr,function(x) lSe[[x]])
         lGCT <- lapply(allchr,function(x) lGCT[[x]])
-        names(lGCT) <- names(lSe)
+        names(lGCT) <- names(lSe) <- allchr
     }
     print("## read in bed file")
     bed <- ts_treatBed(read.table(bed_file,
@@ -140,12 +141,17 @@ run_targeted_sequencing <- function(tumour_bams,
         cat("\n")
     }
     names(allTracks.processed) <- names(allTracks) <- gsub("(.*)/(.*)","\\2",tumour_bams)
+    if(!is.list(purs))
+    {
+        purs <- lapply(1:length(allTracks.processed), function(x) purs)
+        ploidies <- lapply(1:length(allTracks.processed), function(x) ploidies)
+    }
     print("## fit purity and ploidy for all tracks")
     timetofit <- system.time(allSols <- mclapply(1:length(allTracks.processed), function(x)
     {
         sol <- try(searchGrid(allTracks.processed[[x]],
-                              purs = purs,
-                              ploidies = ploidies,
+                              purs = purs[[x]],
+                              ploidies = ploidies[[x]],
                               maxTumourPhi=maxtumourpsi,
                               ismale=if(sex[x]=="male") T else F,
                               isPON=isPON),silent=F)
@@ -187,6 +193,6 @@ run_targeted_sequencing <- function(tumour_bams,
     if(predict_refit)
         res <- predictRefit_all(res)
     if(print_results)
-        res <- printResults_all(res, outdir=outdir, projectname=projectname)
+        res <- printResults_all(res, outdir=outdir, projectname=projectname, is_pdf=is_pdf)
     res
 }

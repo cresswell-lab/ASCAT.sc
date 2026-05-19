@@ -16,6 +16,7 @@ run_sc_sequencing <- function(tumour_bams,
                               barcodes_10x=NULL,
                               normal_bams=NULL,
                               outdir="./",
+                              is_pdf=F,
                               probs_filters=.1,
                               path_to_phases=NULL,
                               list_ac_counts_paths=NULL,
@@ -28,14 +29,10 @@ run_sc_sequencing <- function(tumour_bams,
                               lExclude=NULL,
                               svinput=NULL,
                               lSVinput=NULL,
-                              sc_exclude_badbins=FALSE)
+                              sc_exclude_badbins=FALSE,
+                              betabinom=FALSE)
 {
     checkArguments_scs(c(as.list(environment())))
-    if(!is.list(purs))
-    {
-        purs <- lapply(1:length(tumour_bams), function(x) purs)
-        ploidies <- lapply(1:length(tumour_bams), function(x) ploidies)
-    }
     suppressPackageStartupMessages(require(parallel))
     suppressPackageStartupMessages(require(Rsamtools))
     suppressPackageStartupMessages(require(Biostrings))
@@ -136,7 +133,6 @@ run_sc_sequencing <- function(tumour_bams,
             }))
             # Unlist the top layer to flatten list
             res$allTracks <- unlist(res$allTracks, recursive = FALSE)
-
             # sex[1] because the assumption is when running multiple bamfiles, they are from the same tumour?
             # This ensures that it has the correct length
             sex <- rep(sex[1], length(res$allTracks))
@@ -244,6 +240,12 @@ run_sc_sequencing <- function(tumour_bams,
         names(res$allTracks.processed) <- names(res$allTracks) <- basename(tumour_bams)
     else
         names(res$allTracks.processed) <- names(res$allTracks)
+
+    if(!is.list(purs))
+    {
+        purs <- lapply(1:length(res$allTracks.processed), function(x) purs)
+        ploidies <- lapply(1:length(res$allTracks.processed), function(x) ploidies)
+    }
     print("## fit Purity/Ploidy")
     res$timetofit <- system.time(res$allSols <- mclapply(1:length(res$allTracks.processed), function(x)
     {
@@ -296,7 +298,7 @@ run_sc_sequencing <- function(tumour_bams,
     if(print_results)
     {
         print("## print Results")
-        res <- printResults_all(res, svinput=svinput, lSVinput=lSVinput, outdir=outdir, projectname=projectname)
+        res <- printResults_all(res, svinput=svinput, lSVinput=lSVinput, outdir=outdir, projectname=projectname, is_pdf=is_pdf)
     }
     if(sc_filters)
     {
@@ -317,6 +319,7 @@ run_sc_sequencing <- function(tumour_bams,
                          outdir=outdir,
                          projectname=projectname,
                          steps=steps,
+                         betabinom=betabinom,
                          mc.cores=MC.CORES)
         names(res$allProfiles_AS) <- names(res$allProfiles)
     }
